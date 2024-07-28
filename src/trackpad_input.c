@@ -1,7 +1,8 @@
 #include "MultitouchSupport.h"
 
 
-
+size_t prevFingers = 0;
+int32_t prevPathIndex = 0;
 
 
 int trackpadCallback(
@@ -10,8 +11,28 @@ int trackpadCallback(
     size_t nFingers,
     double timestamp,
     size_t frame) {
-  // do stuff
+  MTTouch primaryFinger;
+
+  if (nFingers == 0) {
+    prevFingers = 0;
+    return 0;
+  }
   
+  if (nFingers == 1) {
+    prevPathIndex = data->pathIndex;
+    primaryFinger = *data;
+  } else {
+    for (int i = 0; i < nFingers; i++) {
+      if (data[i].pathIndex == prevPathIndex) {
+        primaryFinger = data[i];
+      }
+    }
+  }
+
+  // do stuff with primary finger
+
+  prevFingers = nFingers;
+  prevPathIndex = primaryFinger.pathIndex;
   return 0;
 }
     
