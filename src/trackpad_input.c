@@ -11,7 +11,7 @@ int trackpadCallback(
     size_t nFingers,
     double timestamp,
     size_t frame) {
-  MTTouch primaryFinger;
+  MTTouch *primaryFinger = 0;
 
   if (nFingers == 0) {
     prevFingers = 0;
@@ -20,19 +20,23 @@ int trackpadCallback(
   
   if (nFingers == 1) {
     prevPathIndex = data->pathIndex;
-    primaryFinger = *data;
+    primaryFinger = data;
   } else {
     for (int i = 0; i < nFingers; i++) {
       if (data[i].pathIndex == prevPathIndex) {
-        primaryFinger = data[i];
+        primaryFinger = data+i;
       }
     }
+  }
+
+  if (primaryFinger == 0) {
+    primaryFinger = data;
   }
 
   // do stuff with primary finger
 
   prevFingers = nFingers;
-  prevPathIndex = primaryFinger.pathIndex;
+  prevPathIndex = primaryFinger->pathIndex;
   return 0;
 }
     
