@@ -1,9 +1,16 @@
+#include <signal.h>
 #include "MultitouchSupport.h"
 
 
-size_t prevFingers = 0;
+static volatile sig_atomic_t keep_running = 1;
+FILE *fptr;
+size_t prevFingers = 0; // might remove (could be unnecessary)
 int32_t prevPathIndex = 0;
 
+static void sig_handler(int _) {
+  (void)_;
+  keep_running = 0;
+}
 
 int trackpadCallback(
     MTDeviceRef device,
@@ -33,17 +40,24 @@ int trackpadCallback(
     primaryFinger = data;
   }
 
-  // do stuff with primary finger
+  float x, y;
+  x = primaryFinger->normalizedVector.position.x;
+  y = primaryFinger->normalizedVector.position.y;
+  int32_t pathId = primaryFinger->pathIndex;
+  fprintf(fptr, "%f,%f,%d\n", x, y, pathId); // TODO: determine if pathIndex is necessary
 
   prevFingers = nFingers;
-  prevPathIndex = primaryFinger->pathIndex;
+  prevPathIndex = pathId;
   return 0;
 }
     
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   CFArrayRef deviceList = MTDeviceCreateList();
-  while (true) {
+  fptr = fopen("filename", "w"); // TODO: figure out what file to write to
+  signal(SIGINT, sig_handler);
+
+  while (keep_running) {
     for (CFIndex i = 0; i < CFArrayGetCount(deviceList); i++) {
       MTDeviceRef device = (MTDeviceRef)CFArrayGetValueAtIndex(deviceList, i);
       int familyId;
@@ -55,6 +69,7 @@ int main(int argc, char** argv) {
     }
   }
 
+  fclose(fptr);
 
 }
 
