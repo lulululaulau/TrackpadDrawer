@@ -21,5 +21,7 @@ is likely to be made
 If it is in it's own repository,
 I will (hopefully) link it.
 
-
+## Credits
+trackpad access code largely based on code at
+[https://github.com/lokxii/Mac-trackpad-mapper](https://github.com/lokxii/Mac-trackpad-mapper)
 
