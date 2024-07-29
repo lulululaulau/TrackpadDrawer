@@ -9,6 +9,7 @@ and the app will draw at the associated location.
 Currently, the planned features include:
 - pen mode, with thickness option
 - eraser, with thickness option
+
 The features that may or may not be added are:
 - fill
 - colors (besides black and white)
