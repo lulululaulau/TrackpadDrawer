@@ -1,16 +1,9 @@
+#include <stdlib.h>
 #include <signal.h>
 #include "MultitouchSupport.h"
 
 
-static volatile sig_atomic_t keep_running = 1;
-FILE *fptr;
-size_t prevFingers = 0; // might remove (could be unnecessary)
 int32_t prevPathIndex = 0;
-
-static void sig_handler(int _) {
-  (void)_;
-  keep_running = 0;
-}
 
 int trackpadCallback(
     MTDeviceRef device,
@@ -21,7 +14,6 @@ int trackpadCallback(
   MTTouch *primaryFinger = 0;
 
   if (nFingers == 0) {
-    prevFingers = 0;
     return 0;
   }
   
@@ -44,9 +36,14 @@ int trackpadCallback(
   x = primaryFinger->normalizedVector.position.x;
   y = primaryFinger->normalizedVector.position.y;
   int32_t pathId = primaryFinger->pathIndex;
-  fprintf(fptr, "%f,%f,%d\n", x, y, pathId); // TODO: determine if pathIndex is necessary
 
-  prevFingers = nFingers;
+  char *command;
+  int size = asprintf(&command, "echo \"%f,%f,%d\" > filename", x, y, pathId); // TODO: determine filename and whether pathId is relevant
+  if (size >= 0) {
+    system(command);
+  }
+  free(command);
+
   prevPathIndex = pathId;
   return 0;
 }
@@ -54,14 +51,12 @@ int trackpadCallback(
 
 int main(int argc, char **argv) {
   CFArrayRef deviceList = MTDeviceCreateList();
-  fptr = fopen("filename", "w"); // TODO: figure out what file to write to
-  signal(SIGINT, sig_handler);
 
-  while (keep_running) {
+  while (true) {
     for (CFIndex i = 0; i < CFArrayGetCount(deviceList); i++) {
       MTDeviceRef device = (MTDeviceRef)CFArrayGetValueAtIndex(deviceList, i);
       int familyId;
-      MTDeviceGetFamilytID(device, &familyId);
+      MTDeviceGetFamilyID(device, &familyId);
       if (familyId >= 98 && familyId != 112 && familyId != 113) {
         MTRegisterContactFrameCallback(device, (MTFrameCallbackFunction)trackpadCallback);
         MTDeviceStart(device, 0);
@@ -69,7 +64,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  fclose(fptr);
 
 }
 
