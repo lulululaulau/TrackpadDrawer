@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <errno.h>
 #include "shared.h"
 
 
@@ -9,20 +10,20 @@ static volatile sig_atomic_t keep_running = 1;
 SharedData *shared;
 unsigned char *imageData;
 
+typedef union {
+  unsigned char bytes[4];
+  int all;
+} fourBytes;
+
+// color (rgba), width, height, thickness
 struct settings {
-  unsigned char red;
-  unsigned char green;
-  unsigned char blue;
-  unsigned char alpha;
-  int thickness;
-  int width;
-  int height;
+  fourBytes data[4];
 } settings;
 
 typedef struct
 {
-  float x;
-  float y;
+  int x;
+  int y;
 } coordinate_pair;
 
 
@@ -32,14 +33,43 @@ static void sig_handler(int _) {
 }
 
 coordinate_pair read_coords() {
-
+  coordinate_pair output;
+  // TODO: convert from float (trackpad pos, mm) to pixel
+  return output;
 }
 
-void write_image(coordinate_pair coords) {
 
+void write_image(coordinate_pair coords) {
+  int left = coords.x - settings.data[3].all;
+  int right = coords.x + settings .data[3].all;
+  for (int x = left; x <= right; x++) {
+    for (int y = 0; x*x + y*y <= settings.data[3].all; y++) {
+      size_t index = (y * settings.data[1].all + x) * 4;
+      for (int i = 0; i < 4; i++) {
+        imageData[index + i] = settings.data[0].bytes[i];
+      }
+    }
+  }
 }
 
 int processArgs(int argc, char **argv) {
+  if(argc != 8) {
+    return 1;
+  }
+
+  errno = 0;
+
+  for (int i = 0; i < 4; i++) {
+    settings.data[0].bytes[i] = (unsigned char) strtol(argv[i+1], NULL, 10);
+  }
+
+  for (int i = 0; i < 3; i++) {
+    settings.data[i+1].all = (unsigned char) strtol(argv[i+5], NULL, 10);
+  }
+
+  if (errno != 0) {
+    return 2;
+  }
 
   return 0;
 }
