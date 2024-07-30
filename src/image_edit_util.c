@@ -42,14 +42,26 @@ coordinate_pair read_coords() {
 void write_image(coordinate_pair coords) {
   int left = coords.x - settings.data[3].all;
   int right = coords.x + settings .data[3].all;
-  for (int x = left; x <= right; x++) {
-    for (int y = 0; x*x + y*y <= settings.data[3].all; y++) {
-      size_t index = (y * settings.data[1].all + x) * 4;
-      for (int i = 0; i < 4; i++) {
-        imageData[index + i] = settings.data[0].bytes[i];
+  for (int dx = -settings.data[3].all; dx <= settings.data[3].all; dx++) {
+    int x = coords.x + dx;
+    if (0 <= x && x < settings.data[1].all) {
+      continue;
+    }
+    for (int dy = 0; dx*dx + dy * dy <= settings.data[3].all; dy++) {
+      size_t index1 = ((coords.y + dy) * settings.data[1].all + x) * 4;
+      size_t index2 = ((coords.y - dy) * settings.data[1].all + x) * 4;
+      if (coords.y + dy < settings.data[2].all) {
+        for (int i = 0; i < 4; i++) {
+          imageData[index1 + i] = settings.data[0].bytes[i];
+        }
+      }
+      if (coords.y - dy >= 0) {
+        for (int i = 0; i < 4; i++) {
+          imageData[index2 + i] = settings.data[0].bytes[i];
+        }
       }
     }
-  }
+}
 }
 
 int processArgs(int argc, char **argv) {
