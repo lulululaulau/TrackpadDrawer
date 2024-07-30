@@ -1,9 +1,20 @@
 #include <stdlib.h>
 #include <signal.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 #include "MultitouchSupport.h"
+#include "shared.h"
 
 
+static volatile sig_atomic_t keep_running = 1;
 int32_t prevPathIndex = 0;
+SharedData *shared;
+
+
+static void sig_handler(int _) {
+  (void)_;
+  keep_running = 0;
+}
 
 int trackpadCallback(
     MTDeviceRef device,
@@ -30,29 +41,26 @@ int trackpadCallback(
 
   if (primaryFinger == 0) {
     primaryFinger = data;
+    prevPathIndex = primaryFinger->pathIndex;
   }
 
-  float x, y;
-  x = primaryFinger->normalizedVector.position.x;
-  y = primaryFinger->normalizedVector.position.y;
-  int32_t pathId = primaryFinger->pathIndex;
+  shared->x = primaryFinger->normalizedVector.position.x;
+  shared->y = primaryFinger->normalizedVector.position.y;
+  shared->pathIndex = primaryFinger->pathIndex;
 
-  char *command;
-  int size = asprintf(&command, "echo \"%f,%f,%d\" > filename", x, y, pathId); // TODO: determine filename and whether pathId is relevant
-  if (size >= 0) {
-    system(command);
-  }
-  free(command);
 
-  prevPathIndex = pathId;
   return 0;
 }
-    
 
 int main(int argc, char **argv) {
   CFArrayRef deviceList = MTDeviceCreateList();
+  signal(SIGINT, sig_handler);
 
-  while (true) {
+  int shm_fd = shm_open(tmpName, O_RDWR, 0666); // use O_CREATE | O_RDWR to create shared memory instead of just access
+                                                // remember to use shm_unlink(tmpName) to clean up the shared memory
+  shared = (SharedData*)mmap(0, sizeof(SharedData), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
+  while (keep_running) {
     for (CFIndex i = 0; i < CFArrayGetCount(deviceList); i++) {
       MTDeviceRef device = (MTDeviceRef)CFArrayGetValueAtIndex(deviceList, i);
       int familyId;
@@ -64,6 +72,7 @@ int main(int argc, char **argv) {
     }
   }
 
+  close(shm_fd);
 
 }
 
