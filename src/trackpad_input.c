@@ -48,7 +48,6 @@ int trackpadCallback(
   shared->y = primaryFinger->normalizedVector.position.y;
   shared->pathIndex = primaryFinger->pathIndex;
 
-
   return 0;
 }
 
@@ -56,8 +55,7 @@ int main(int argc, char **argv) {
   CFArrayRef deviceList = MTDeviceCreateList();
   signal(SIGINT, sig_handler);
 
-  int shm_fd = shm_open(tmpName, O_RDWR, 0666); // use O_CREATE | O_RDWR to create shared memory instead of just access
-                                                // remember to use shm_unlink(tmpName) to clean up the shared memory
+  int shm_fd = shm_open(tmpName, O_CREAT | O_RDWR, 0666);
   shared = (SharedData*)mmap(0, sizeof(SharedData), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
   while (keep_running) {

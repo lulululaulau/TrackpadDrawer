@@ -34,7 +34,7 @@ static void sig_handler(int _) {
 
 coordinate_pair read_coords() {
   coordinate_pair output;
-  // TODO: convert from float (trackpad pos, mm) to pixel
+  // TODO: convert from float (trackpad pos in mm) to pixel
   return output;
 }
 
@@ -61,11 +61,12 @@ void write_image(coordinate_pair coords) {
         }
       }
     }
-}
+  }
 }
 
 int processArgs(int argc, char **argv) {
-  if(argc != 8) {
+  int numArgs = 7;
+  if (argc != numArgs + 1) {
     return 1;
   }
 
@@ -75,7 +76,7 @@ int processArgs(int argc, char **argv) {
     settings.data[0].bytes[i] = (unsigned char) strtol(argv[i+1], NULL, 10);
   }
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < numArgs - 4; i++) {
     settings.data[i+1].all = (unsigned char) strtol(argv[i+5], NULL, 10);
   }
 
@@ -108,6 +109,9 @@ int main(int argc, char **argv) {
   close(shm_fd);
   munmap(imageData, fileSize);
   remove(filePath);
+
+  shm_unlink(tmpName);
+  // better to let trackpad_input fail?
 
 }
 
