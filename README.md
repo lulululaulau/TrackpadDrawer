@@ -10,6 +10,10 @@ and the app will draw at the associated location.
 Currently, the planned features include:
 - pen mode, with thickness option
 - eraser, with thickness option
+- palm rejection (sorta)
+(if your finger or stylus (those usually work, right?)
+touches the trackpad before your palm and is lifted after your palm,
+your palm should be ignnored)
 
 The features that may or may not be added are:
 - fill
