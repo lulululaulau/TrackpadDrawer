@@ -14,6 +14,8 @@ func main() {
     defer: false
   )
   window.center()
+  window.title = "Trackpad Drawer"
+  window.makeKeyAndOrderFront(nil)
 
   let mainViewController = MainViewController()
   window.contentViewController = mainViewController
