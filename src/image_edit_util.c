@@ -16,9 +16,7 @@ typedef union {
 } fourBytes;
 
 // color (rgba), width, height, thickness
-struct settings {
-  fourBytes data[4];
-} settings;
+fourBytes settings[4];
 
 typedef struct
 {
@@ -34,30 +32,31 @@ static void sig_handler(int _) {
 
 coordinate_pair read_coords() {
   coordinate_pair output;
-  // TODO: convert from float (trackpad pos in mm) to pixel
+  output.x = (int)((&settings)[1].all * shared->x);
+  output.y = (int)((&settings)[2].all * shared->y);
   return output;
 }
 
 
 void write_image(coordinate_pair coords) {
-  int left = coords.x - settings.data[3].all;
-  int right = coords.x + settings .data[3].all;
-  for (int dx = -settings.data[3].all; dx <= settings.data[3].all; dx++) {
+  int left = coords.x - (&settings)[3].all;
+  int right = coords.x + (&settings)[3].all;
+  for (int dx = -(&settings)[3].all; dx <= (&settings)[3].all; dx++) {
     int x = coords.x + dx;
-    if (0 <= x && x < settings.data[1].all) {
+    if (0 <= x && x < (&settings)[1].all) {
       continue;
     }
-    for (int dy = 0; dx*dx + dy * dy <= settings.data[3].all; dy++) {
-      size_t index1 = ((coords.y + dy) * settings.data[1].all + x) * 4;
-      size_t index2 = ((coords.y - dy) * settings.data[1].all + x) * 4;
-      if (coords.y + dy < settings.data[2].all) {
+    for (int dy = 0; dx*dx + dy * dy <= (&settings)[3].all; dy++) {
+      size_t index1 = ((coords.y + dy) * (&settings)[1].all + x) * 4;
+      size_t index2 = ((coords.y - dy) * (&settings)[1].all + x) * 4;
+      if (coords.y + dy < (&settings)[2].all) {
         for (int i = 0; i < 4; i++) {
-          imageData[index1 + i] = settings.data[0].bytes[i];
+          imageData[index1 + i] = (&settings)[0].bytes[i];
         }
       }
       if (coords.y - dy >= 0) {
         for (int i = 0; i < 4; i++) {
-          imageData[index2 + i] = settings.data[0].bytes[i];
+          imageData[index2 + i] = (&settings)[0].bytes[i];
         }
       }
     }
@@ -73,11 +72,11 @@ int processArgs(int argc, char **argv) {
   errno = 0;
 
   for (int i = 0; i < 4; i++) {
-    settings.data[0].bytes[i] = (unsigned char) strtol(argv[i+1], NULL, 10);
+    (&settings)[0].bytes[i] = (unsigned char) strtol(argv[i+1], NULL, 10);
   }
 
   for (int i = 0; i < numArgs - 4; i++) {
-    settings.data[i+1].all = (unsigned char) strtol(argv[i+5], NULL, 10);
+    (&settings)[i+1].all = (unsigned char) strtol(argv[i+5], NULL, 10);
   }
 
   if (errno != 0) {
