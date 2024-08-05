@@ -13,7 +13,7 @@ Currently, the planned features include:
 - palm rejection (sorta)
 (if your finger or stylus (those usually work, right?)
 touches the trackpad before your palm and is lifted after your palm,
-your palm should be ignnored)
+your palm should be ignored)
 
 The features that may or may not be added are:
 - fill
