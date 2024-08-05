@@ -72,5 +72,7 @@ int main(int argc, char **argv) {
 
   close(shm_fd);
 
+  shm_unlink(tmpName);
+
 }
 

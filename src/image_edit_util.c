@@ -110,8 +110,6 @@ int main(int argc, char **argv) {
   munmap(imageData, fileSize);
   remove(filePath);
 
-  shm_unlink(tmpName);
-  // better to let trackpad_input fail?
 
 }
 
