@@ -4,7 +4,7 @@ import Cocoa
 class ViewController: NSViewControllr {
   @IBOutlet weak var imageView: UIImageView!
   
-  var displayLink: CADIsplayLink?
+  var displayLink: CADisplayLink?
   var imageData: UnsafeMutablePointer<UInt8>?
   var width: Int
   var height: Int
@@ -21,7 +21,7 @@ class ViewController: NSViewControllr {
     }
     
     let fileSize = width * height * 4
-    let imageData = mmap(nil, fileLize, PROT_READ | PROT_WRITE, MAP_SHARED, fileDescriptor, 0)
+    let imageData = mmap(nil, fileSize, PROT_READ | PROT_WRITE, MAP_SHARED, fileDescriptor, 0)
     if imageData == MAP_FAILED {
       // error
       return
