@@ -1,13 +1,23 @@
 import SwiftUI
 import Cocoa
 
-class ViewController: NSViewControllr {
-  @IBOutlet weak var imageView: UIImageView!
+class ImageDisplay: NSViewController {
+  @IBOutlet weak var imageView: NSImageView!
   
   var displayLink: CADisplayLink?
   var imageData: UnsafeMutablePointer<UInt8>?
-  var width: Int
-  var height: Int
+  var width: Int = 0
+  var height: Int = 0
+
+  required init?(coder: NSCoder) {
+    super.init(coder: coder)
+  }
+
+  init(width: Int, height: Int) {
+    self.width = width
+    self.height = height
+    super.init(nibName: nil, bundle: nil)
+  }
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -28,8 +38,7 @@ class ViewController: NSViewControllr {
     }
 
     self.imageData = imageData?.bindMemory(to: UInt8.self, capacity: fileSize)
-
-    displayLink = CADisplayLink(target: self, selector: #selector(refreshImageView))
+    displayLink = self.view.displayLink(target: self, selector: #selector(refreshImageView))
     displayLink?.add(to: .main, forMode: .default)
   }
 
@@ -50,7 +59,10 @@ class ViewController: NSViewControllr {
                             decode: nil,
                             shouldInterpolate: true,
                             intent: .defaultIntent) {
-      imageView.image = UIImage(cgImage: cgImage)
+      var size = NSSize.init()
+      size.width = CGFloat(width)
+      size.height = CGFloat(height)
+      imageView.image = NSImage(cgImage: cgImage, size: size)
     }
   }
 

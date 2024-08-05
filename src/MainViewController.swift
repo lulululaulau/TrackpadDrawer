@@ -15,14 +15,14 @@ class MainViewController: NSViewController {
     let toolbar = Toolbar()
     addChild(toolbar)
     stackView.addArrangedSubview(toolbar.view)
-    toolbar.view.translatesAutoresizingMaskIntoConstrants = false
+    toolbar.view.translatesAutoresizingMaskIntoConstraints = false
 
-    let imageDisplay = ImageDisplay()
+    let imageDisplay = ImageDisplay(width: 100, height: 100) // placeholder values
     addChild(imageDisplay)
-    stackView.addArrangedSubview(imageDisplay)
-    imageDisplay.view.translatesAutoresizingMaskIntoConstrants = false
+    stackView.addArrangedSubview(imageDisplay.view)
+    imageDisplay.view.translatesAutoresizingMaskIntoConstraints = false
 
-    stackView.translatesAutoresizingMaskIntoConstrants = false
+    stackView.translatesAutoresizingMaskIntoConstraints = false
     self.view.addSubview(stackView)
 
     NSLayoutConstraint.activate([
